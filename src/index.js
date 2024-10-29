@@ -1,5 +1,3 @@
-// si es backspace, borrar la letra de su caja
-
 import { fromEvent } from 'rxjs';
 
 const letterRows = document.getElementsByClassName('letter-row');
@@ -26,5 +24,26 @@ const insertLetter = {
 		console.error("Something went wrong: ", error.message);
 	}
 };
+const deleteLetter = {
+  next: (event) => {
+    const pressedKey = event.key;
+    if (pressedKey === 'Backspace') {
+      debugger
+      let letterBox = Array.from(letterRows)[letterRowIndex].children[letterColumnIndex - 1];
+      if (letterBox) {
+        letterBox.classList.remove('filled-letter');
+        letterColumnIndex--;
+        letterBox.textContent = '';
+      }
+    }
+  },
+  complete: () => {
+		console.warn("There are no more events");
+	},
+	error: (error) => {
+		console.error("Something went wrong: ", error.message);
+	}
+};
 
 onKeyDown$.subscribe(insertLetter);
+onKeyDown$.subscribe(deleteLetter);
