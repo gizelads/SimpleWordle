@@ -3,6 +3,7 @@ import WORDS_LIST from './wordsList.json'
 
 const letterRows = document.getElementsByClassName('letter-row');
 const numberOfColumns = letterRows[0].children.length;
+const messageText = document.getElementById('message-text');
 let letterRowIndex = 0;
 let letterColumnIndex = 0;
 let userRowWord = [];
@@ -60,14 +61,16 @@ const checkWord = {
       const isNotMaxRow = letterRowIndex < letterRows.length - 1;
       const isRowFull = userRowWord.length === numberOfColumns;
       if (isNotMaxRow && isRowFull) {
-        letterRowIndex++;
-        letterColumnIndex = 0;
-        userRowWord = [];
-      }
-      if (userRowWord.join('') === randomWord) {
-        //user wins
-        userWinOrLose$.next();
-      }
+        if (userRowWord.join('') === randomWord) {
+          //user wins
+          userWinOrLose$.next();
+        } else {
+          letterRowIndex++;
+          letterColumnIndex = 0;
+          userRowWord = [];
+          messageText.textContent = '↪️Enter pressed';
+        }
+      } else { messageText.textContent = '⚠️Missing letters before enter!';}
     }
   }
 };
@@ -76,8 +79,9 @@ onKeyDown$.subscribe(insertLetter);
 onKeyDown$.subscribe(deleteLetter);
 onKeyDown$.subscribe(checkWord);
 userWinOrLose$.subscribe(() => {
-  console.log('user wins');
-  let letters = [...letterRows[letterRowIndex].children];
-  letters.forEach(element => element.classList.add('letter-green'));
+    console.log('user wins');
+    let letters = [...letterRows[letterRowIndex].children];
+    letters.forEach(element => element.classList.add('letter-green'));
+    messageText.textContent = '🎉🪅You won!🎉🪅';
   }
 );
