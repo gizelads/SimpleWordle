@@ -65,15 +65,40 @@ const checkWord = {
           //user wins
           userWinOrLose$.next();
         } else {
+          giveUserHints();
           letterRowIndex++;
           letterColumnIndex = 0;
           userRowWord = [];
           messageText.textContent = '↪️Enter pressed';
         }
-      } else { messageText.textContent = '⚠️Missing letters before enter!';}
+      } else {
+        // todo: count missing letters
+        messageText.textContent = '⚠️Missing letters before enter!';
+      }
     }
   }
 };
+
+function giveUserHints() {
+  const righWordArray = Array.from(randomWord);
+  for (let i = 0; i < numberOfColumns; i++) {
+    let letterColor = '';
+    let letterBox = Array.from(letterRows)[letterRowIndex].children[i];
+    console.log(letterBox);
+    let letterPosition = righWordArray.indexOf(userRowWord[i]);
+    console.log(letterPosition);
+    if (letterPosition === -1) {
+      letterColor = 'letter-grey';
+    } else {
+      if (righWordArray[i] === userRowWord[i]) {
+        letterColor = 'letter-green';
+      } else {
+        letterColor = 'letter-yellow';
+      }
+    }
+    letterBox.classList.add(letterColor);
+  }
+}
 
 onKeyDown$.subscribe(insertLetter);
 onKeyDown$.subscribe(deleteLetter);
