@@ -2,6 +2,7 @@ import { fromEvent, Subject } from 'rxjs';
 import WORDS_LIST from './wordsList.json'
 
 const letterRows = document.getElementsByClassName('letter-row');
+const numberOfColumns = letterRows[0].children.length;
 let letterRowIndex = 0;
 let letterColumnIndex = 0;
 let userRowWord = [];
@@ -56,6 +57,13 @@ const checkWord = {
   next: (event) => {
     const pressedKey = event.key;
     if (pressedKey === 'Enter') {
+      const isNotMaxRow = letterRowIndex < letterRows.length - 1;
+      const isRowFull = userRowWord.length === numberOfColumns;
+      if (isNotMaxRow && isRowFull) {
+        letterRowIndex++;
+        letterColumnIndex = 0;
+        userRowWord = [];
+      }
       if (userRowWord.join('') === randomWord) {
         //user wins
         userWinOrLose$.next();
