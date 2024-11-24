@@ -72,8 +72,10 @@ const checkWord = {
           messageText.textContent = '↪️Enter pressed';
         }
       } else {
-        // todo: count missing letters
-        messageText.textContent = '⚠️Missing letters before enter!';
+        const lettersMissing = numberOfColumns - letterColumnIndex;
+        messageText.textContent = lettersMissing === 1 ? 
+          `⚠️ ${lettersMissing} - missing letter before enter!`:
+          `⚠️ ${lettersMissing} - missing letters before enter!`;
       }
     }
   }
@@ -100,13 +102,12 @@ function giveUserHints() {
   }
 }
 
-onKeyDown$.subscribe(insertLetter);
-onKeyDown$.subscribe(deleteLetter);
-onKeyDown$.subscribe(checkWord);
 userWinOrLose$.subscribe(() => {
-    console.log('user wins');
     let letters = [...letterRows[letterRowIndex].children];
     letters.forEach(element => element.classList.add('letter-green'));
     messageText.textContent = '🎉🪅You won!🎉🪅';
   }
 );
+onKeyDown$.subscribe(insertLetter);
+onKeyDown$.subscribe(deleteLetter);
+onKeyDown$.subscribe(checkWord);
