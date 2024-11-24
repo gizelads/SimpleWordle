@@ -1,9 +1,10 @@
-import { fromEvent, Subject, takeLast, takeUntil } from 'rxjs';
+import { fromEvent, Subject, takeUntil } from 'rxjs';
 import WORDS_LIST from './wordsList.json'
 
 const letterRows = document.getElementsByClassName('letter-row');
 const numberOfColumns = letterRows[0].children.length;
 const messageText = document.getElementById('message-text');
+const restartButton = document.getElementById('restart-button');
 let letterRowIndex = 0;
 let letterColumnIndex = 0;
 let userRowWord = [];
@@ -66,6 +67,7 @@ const checkWord = {
           letters.forEach(element => element.classList.add('letter-green'));
           messageText.textContent = '🎉🪅You won!🎉🪅';
           userWinOrLose$.next();
+          restartButton.disabled = false;
         } else {
           giveUserHints();
           letterRowIndex++;
@@ -81,9 +83,9 @@ const checkWord = {
 
         if(lettersMissing === 0){
           giveUserHints();
-          messageText.innerHTML = 
-            `😭❌You lost!😭❌<br>The word was: ${randomWord}`;
+          messageText.innerHTML = `😭❌You lost!😭❌<br>The word was: ${randomWord}`;
           userWinOrLose$.next();
+          restartButton.disabled = false;
         }
       }
     }
@@ -101,9 +103,7 @@ function giveUserHints() {
   for (let i = 0; i < numberOfColumns; i++) {
     let letterColor = '';
     let letterBox = Array.from(letterRows)[letterRowIndex].children[i];
-    console.log(letterBox);
     let letterPosition = righWordArray.indexOf(userRowWord[i]);
-    console.log(letterPosition);
     if (letterPosition === -1) {
       letterColor = 'letter-grey';
     } else {
