@@ -1,4 +1,4 @@
-import { fromEvent, Subject } from 'rxjs';
+import { fromEvent, Subject, takeLast, takeUntil } from 'rxjs';
 import WORDS_LIST from './wordsList.json'
 
 const letterRows = document.getElementsByClassName('letter-row');
@@ -62,7 +62,9 @@ const checkWord = {
       const isRowFull = userRowWord.length === numberOfColumns;
       if (isNotMaxRow && isRowFull) {
         if (userRowWord.join('') === randomWord) {
-          //user wins
+          const letters = [...letterRows[letterRowIndex].children];
+          letters.forEach(element => element.classList.add('letter-green'));
+          messageText.textContent = '🎉🪅You won!🎉🪅';
           userWinOrLose$.next();
         } else {
           giveUserHints();
@@ -76,9 +78,22 @@ const checkWord = {
         messageText.textContent = lettersMissing === 1 ? 
           `⚠️ ${lettersMissing} - missing letter before enter!`:
           `⚠️ ${lettersMissing} - missing letters before enter!`;
+
+        if(lettersMissing === 0){
+          giveUserHints();
+          messageText.innerHTML = 
+            `😭❌You lost!😭❌<br>The word was: ${randomWord}`;
+          userWinOrLose$.next();
+        }
       }
     }
-  }
+  },
+  complete: () => {
+		console.warn("There are no more events");
+	},
+	error: (error) => {
+		console.error("Something went wrong: ", error.message);
+	}
 };
 
 function giveUserHints() {
@@ -102,12 +117,12 @@ function giveUserHints() {
   }
 }
 
-userWinOrLose$.subscribe(() => {
-    let letters = [...letterRows[letterRowIndex].children];
-    letters.forEach(element => element.classList.add('letter-green'));
-    messageText.textContent = '🎉🪅You won!🎉🪅';
-  }
-);
-onKeyDown$.subscribe(insertLetter);
-onKeyDown$.subscribe(deleteLetter);
-onKeyDown$.subscribe(checkWord);
+onKeyDown$.pipe(
+  takeUntil(userWinOrLose$)
+).subscribe(insertLetter);
+onKeyDown$.pipe(
+  takeUntil(userWinOrLose$)
+).subscribe(deleteLetter);
+onKeyDown$.pipe(
+  takeUntil(userWinOrLose$)
+).subscribe(checkWord);

@@ -79,6 +79,7 @@ body {
 
 .message-text {
   color: white;
+  text-align: center;
 }
 
 .restart-container {
