@@ -1,4 +1,4 @@
-import { fromEvent, Subject, takeUntil } from 'rxjs';
+import { filter, fromEvent, map, Subject, takeUntil } from 'rxjs';
 import WORDS_LIST from './wordsList.json'
 
 const letterRows = document.getElementsByClassName('letter-row');
@@ -15,10 +15,12 @@ console.log('%cRandom word is:', 'color:green', randomWord);
 const userWinOrLose$ = new Subject();
 const onKeyDown$ = fromEvent(document, 'keydown');
 
+const insertLetter$ = onKeyDown$.pipe(
+  map(event => event.key.toUpperCase()),
+  filter(pressedKey => pressedKey.length === 1 && pressedKey.match(/[A-Z]/))
+);
 const insertLetter = {
-  next: (event) => {
-    const pressedKey = event.key.toUpperCase();
-    if (pressedKey.length === 1 && pressedKey.match(/[a-z]/i)) {
+  next: (pressedKey) => {
       let letterBox = Array.from(letterRows)[letterRowIndex].children[letterColumnIndex];
       if (letterBox) {
         letterBox.textContent = pressedKey;
@@ -27,14 +29,14 @@ const insertLetter = {
         userRowWord.push(pressedKey);
       }
     }
-  },
-  complete: () => {
+  ,complete: () => {
 		console.warn("There are no more events");
 	},
 	error: (error) => {
 		console.error("Something went wrong: ", error.message);
 	}
 };
+
 const deleteLetter = {
   next: (event) => {
     const pressedKey = event.key;
@@ -117,7 +119,7 @@ function giveUserHints() {
   }
 }
 
-onKeyDown$.pipe(
+insertLetter$.pipe(
   takeUntil(userWinOrLose$)
 ).subscribe(insertLetter);
 onKeyDown$.pipe(
