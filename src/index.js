@@ -37,17 +37,17 @@ const insertLetter = {
 	}
 };
 
+const deleteLetter$ = onKeyDown$.pipe(
+  filter(event => event.key === 'Backspace')
+);
 const deleteLetter = {
   next: (event) => {
-    const pressedKey = event.key;
-    if (pressedKey === 'Backspace') {
-      let letterBox = Array.from(letterRows)[letterRowIndex].children[letterColumnIndex - 1];
-      if (letterBox) {
-        letterBox.classList.remove('filled-letter');
-        letterColumnIndex--;
-        letterBox.textContent = '';
-        userRowWord.pop();
-      }
+    let letterBox = Array.from(letterRows)[letterRowIndex].children[letterColumnIndex - 1];
+    if (letterBox) {
+      letterBox.classList.remove('filled-letter');
+      letterColumnIndex--;
+      letterBox.textContent = '';
+      userRowWord.pop();
     }
   },
   complete: () => {
@@ -57,38 +57,39 @@ const deleteLetter = {
 		console.error("Something went wrong: ", error.message);
 	}
 };
+
+const checkWord$ = onKeyDown$.pipe(
+  filter(event => event.key === 'Enter')
+);
 const checkWord = {
   next: (event) => {
-    const pressedKey = event.key;
-    if (pressedKey === 'Enter') {
-      const isNotMaxRow = letterRowIndex < letterRows.length - 1;
-      const isRowFull = userRowWord.length === numberOfColumns;
-      if (isNotMaxRow && isRowFull) {
-        if (userRowWord.join('') === randomWord) {
-          const letters = [...letterRows[letterRowIndex].children];
-          letters.forEach(element => element.classList.add('letter-green'));
-          messageText.textContent = '🎉🪅You won!🎉🪅';
-          userWinOrLose$.next();
-          restartButton.disabled = false;
-        } else {
-          giveUserHints();
-          letterRowIndex++;
-          letterColumnIndex = 0;
-          userRowWord = [];
-          messageText.textContent = '↪️Enter pressed';
-        }
+    const isNotMaxRow = letterRowIndex < letterRows.length - 1;
+    const isRowFull = userRowWord.length === numberOfColumns;
+    if (isNotMaxRow && isRowFull) {
+      if (userRowWord.join('') === randomWord) {
+        const letters = [...letterRows[letterRowIndex].children];
+        letters.forEach(element => element.classList.add('letter-green'));
+        messageText.textContent = '🎉🪅You won!🎉🪅';
+        userWinOrLose$.next();
+        restartButton.disabled = false;
       } else {
-        const lettersMissing = numberOfColumns - letterColumnIndex;
-        messageText.textContent = lettersMissing === 1 ? 
-          `⚠️ ${lettersMissing} - missing letter before enter!`:
-          `⚠️ ${lettersMissing} - missing letters before enter!`;
+        giveUserHints();
+        letterRowIndex++;
+        letterColumnIndex = 0;
+        userRowWord = [];
+        messageText.textContent = '↪️Enter pressed';
+      }
+    } else {
+      const lettersMissing = numberOfColumns - letterColumnIndex;
+      messageText.textContent = lettersMissing === 1 ? 
+        `⚠️ ${lettersMissing} - missing letter before enter!`:
+        `⚠️ ${lettersMissing} - missing letters before enter!`;
 
-        if(lettersMissing === 0){
-          giveUserHints();
-          messageText.innerHTML = `😭❌You lost!😭❌<br>The word was: ${randomWord}`;
-          userWinOrLose$.next();
-          restartButton.disabled = false;
-        }
+      if(lettersMissing === 0){
+        giveUserHints();
+        messageText.innerHTML = `😭❌You lost!😭❌<br>The word was: ${randomWord}`;
+        userWinOrLose$.next();
+        restartButton.disabled = false;
       }
     }
   },
@@ -119,12 +120,6 @@ function giveUserHints() {
   }
 }
 
-insertLetter$.pipe(
-  takeUntil(userWinOrLose$)
-).subscribe(insertLetter);
-onKeyDown$.pipe(
-  takeUntil(userWinOrLose$)
-).subscribe(deleteLetter);
-onKeyDown$.pipe(
-  takeUntil(userWinOrLose$)
-).subscribe(checkWord);
+insertLetter$.pipe(takeUntil(userWinOrLose$)).subscribe(insertLetter);
+deleteLetter$.pipe(takeUntil(userWinOrLose$)).subscribe(deleteLetter);
+checkWord$.pipe(takeUntil(userWinOrLose$)).subscribe(checkWord);
