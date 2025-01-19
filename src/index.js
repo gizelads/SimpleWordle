@@ -63,7 +63,7 @@ const checkWord$ = onKeyDown$.pipe(
 );
 const checkWord = {
   next: (event) => {
-    const isNotMaxRow = letterRowIndex < letterRows.length - 1;
+    const isNotMaxRow = letterRowIndex <= letterRows.length - 1;
     const isRowFull = userRowWord.length === numberOfColumns;
     if (isNotMaxRow && isRowFull) {
       if (userRowWord.join('') === randomWord) {
