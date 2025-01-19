@@ -70,39 +70,30 @@ const checkWord$ = onKeyDown$.pipe(
 );
 const checkWord = {
   next: (event) => {
-    const isMaxRow = letterRowIndex === letterRows.length - 1;
+    const isLastRow = letterRowIndex === letterRows.length - 1;
     const isRowFull = userRowWord.length === numberOfColumns;
-    if (!isMaxRow && isRowFull) {
-      if (userRowWord.join('') === randomWord) {
+    const userAnswer = userRowWord.join('').toUpperCase();
+    if (isRowFull) {
+      if (userAnswer === randomWord) {
         const letters = [...letterRows[letterRowIndex].children];
         letters.forEach(element => element.classList.add('letter-green'));
         messageText.textContent = '🎉🪅You won!🎉🪅';
-        userWinOrLose$.next();
-        restartButton.disabled = false;
-        finishSubscriptions();
+        endGame();
+      } else if (isLastRow) {
+        messageText.innerHTML = `😭❌You lost!😭❌<br>The word was: ${randomWord}`;
+        endGame();
       } else {
         giveUserHints();
         letterRowIndex++;
         letterColumnIndex = 0;
-        const userAnswer = userRowWord.join('').toUpperCase();
-        messageText.textContent = !WORDS_LIST.includes(userAnswer) ?
-          `↪️Enter pressed. The word ${userAnswer} is not in the list.` :
+        messageText.innerHTML = !WORDS_LIST.includes(userAnswer) ?
+          `💡The word ${userAnswer} is not in the list.` :
           '↪️Enter pressed.';
         userRowWord = [];
       }
     } else {
-      messageText.textContent = userRowWord.length === 4 ? 
-        `⚠️ 1 - missing letter before enter!`:
-        `⚠️ ${5 - userRowWord.length} - missing letters before enter!`;
-
-      const lettersMissing = numberOfColumns - letterColumnIndex;
-      if(lettersMissing === 0){
-        giveUserHints();
-        messageText.innerHTML = `😭❌You lost!😭❌<br>The word was: ${randomWord}`;
-        userWinOrLose$.next();
-        restartButton.disabled = false;
-        finishSubscriptions();
-      }
+      const lettersMissing = numberOfColumns - userRowWord.length;
+      messageText.textContent = `⚠️ ${lettersMissing} missing letter${lettersMissing > 1 ? 's' : ''} before enter!`;
     }
   },
   complete: () => {
@@ -141,7 +132,9 @@ function resetCellsAndRows() {
   );
 }
 
-function finishSubscriptions() {
+function endGame() {
+  userWinOrLose$.next();
+  restartButton.disabled = false;
   insertLetterSub.unsubscribe();
   deleteLetterSub.unsubscribe();
   checkWordSub.unsubscribe();
