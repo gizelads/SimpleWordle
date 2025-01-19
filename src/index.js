@@ -1,19 +1,26 @@
-import { filter, fromEvent, map, Subject, takeUntil } from 'rxjs';
+import { filter, fromEvent, map, merge, Subject, takeUntil } from 'rxjs';
 import WORDS_LIST from './wordsList.json'
 
 const letterRows = document.getElementsByClassName('letter-row');
 const numberOfColumns = letterRows[0].children.length;
 const messageText = document.getElementById('message-text');
 const restartButton = document.getElementById('restart-button');
-let letterRowIndex = 0;
-let letterColumnIndex = 0;
-let userRowWord = [];
+let letterRowIndex;
+let letterColumnIndex;
+let userRowWord;
 const getRandomWord = () => WORDS_LIST[Math.floor(Math.random() * WORDS_LIST.length)];
-const randomWord = getRandomWord();
-console.log('%cRandom word is:', 'color:green', randomWord);
+let randomWord;
+
+const onWindowLoad$ = fromEvent(window, 'load');
+const onRestartClick$ = fromEvent(restartButton, 'click');
+const restartGame$ = merge(onWindowLoad$, onRestartClick$);
 
 const userWinOrLose$ = new Subject();
 const onKeyDown$ = fromEvent(document, 'keydown');
+
+let insertLetterSub;
+let deleteLetterSub;
+let checkWordSub;
 
 const insertLetter$ = onKeyDown$.pipe(
   map(event => event.key.toUpperCase()),
@@ -72,6 +79,7 @@ const checkWord = {
         messageText.textContent = '🎉🪅You won!🎉🪅';
         userWinOrLose$.next();
         restartButton.disabled = false;
+        finishSubscriptions();
       } else {
         giveUserHints();
         letterRowIndex++;
@@ -93,6 +101,7 @@ const checkWord = {
         messageText.innerHTML = `😭❌You lost!😭❌<br>The word was: ${randomWord}`;
         userWinOrLose$.next();
         restartButton.disabled = false;
+        finishSubscriptions();
       }
     }
   },
@@ -123,6 +132,33 @@ function giveUserHints() {
   }
 }
 
-insertLetter$.pipe(takeUntil(userWinOrLose$)).subscribe(insertLetter);
-deleteLetter$.pipe(takeUntil(userWinOrLose$)).subscribe(deleteLetter);
-checkWord$.pipe(takeUntil(userWinOrLose$)).subscribe(checkWord);
+function resetCellsAndRows() {
+  Array.from(letterRows).map( row =>
+    Array.from(row.children).map(column => {
+      column.textContent = '';
+      column.classList = 'letter';
+    })
+  );
+}
+
+function finishSubscriptions() {
+  insertLetterSub.unsubscribe();
+  deleteLetterSub.unsubscribe();
+  checkWordSub.unsubscribe();
+}
+
+restartGame$.subscribe(() => {
+  restartButton.disabled = true;
+  messageText.textContent = '';
+  letterRowIndex = 0;
+  letterColumnIndex = 0;
+  userRowWord = [];
+  randomWord = getRandomWord();
+  console.log('%cRandom word is:', 'color:green', randomWord);
+
+  resetCellsAndRows();
+
+  insertLetterSub = insertLetter$.pipe(takeUntil(userWinOrLose$)).subscribe(insertLetter);
+  deleteLetterSub = deleteLetter$.pipe(takeUntil(userWinOrLose$)).subscribe(deleteLetter);
+  checkWordSub = checkWord$.pipe(takeUntil(userWinOrLose$)).subscribe(checkWord);
+});
