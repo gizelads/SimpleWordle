@@ -63,9 +63,9 @@ const checkWord$ = onKeyDown$.pipe(
 );
 const checkWord = {
   next: (event) => {
-    const isNotMaxRow = letterRowIndex <= letterRows.length - 1;
+    const isMaxRow = letterRowIndex === letterRows.length - 1;
     const isRowFull = userRowWord.length === numberOfColumns;
-    if (isNotMaxRow && isRowFull) {
+    if (!isMaxRow && isRowFull) {
       if (userRowWord.join('') === randomWord) {
         const letters = [...letterRows[letterRowIndex].children];
         letters.forEach(element => element.classList.add('letter-green'));
