@@ -83,11 +83,11 @@ const checkWord = {
         userRowWord = [];
       }
     } else {
-      const lettersMissing = numberOfColumns - letterColumnIndex;
-      messageText.textContent = lettersMissing === 1 ? 
-        `⚠️ ${lettersMissing} - missing letter before enter!`:
-        `⚠️ ${lettersMissing} - missing letters before enter!`;
+      messageText.textContent = userRowWord.length === 4 ? 
+        `⚠️ 1 - missing letter before enter!`:
+        `⚠️ ${5 - userRowWord.length} - missing letters before enter!`;
 
+      const lettersMissing = numberOfColumns - letterColumnIndex;
       if(lettersMissing === 0){
         giveUserHints();
         messageText.innerHTML = `😭❌You lost!😭❌<br>The word was: ${randomWord}`;
