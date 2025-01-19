@@ -76,8 +76,11 @@ const checkWord = {
         giveUserHints();
         letterRowIndex++;
         letterColumnIndex = 0;
+        const userAnswer = userRowWord.join('').toUpperCase();
+        messageText.textContent = !WORDS_LIST.includes(userAnswer) ?
+          `↪️Enter pressed. The word ${userAnswer} is not in the list.` :
+          '↪️Enter pressed.';
         userRowWord = [];
-        messageText.textContent = '↪️Enter pressed';
       }
     } else {
       const lettersMissing = numberOfColumns - letterColumnIndex;
