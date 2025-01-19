@@ -86,6 +86,8 @@ const checkWord = {
         giveUserHints();
         letterRowIndex++;
         letterColumnIndex = 0;
+        const firstNextLineLetterBox = Array.from(letterRows)[letterRowIndex].children[letterColumnIndex];
+        if (firstNextLineLetterBox) firstNextLineLetterBox.classList.add('filled-letter');
         messageText.innerHTML = !WORDS_LIST.includes(userAnswer) ?
           `💡The word ${userAnswer} is not in the list.` :
           '↪️Enter pressed.';
